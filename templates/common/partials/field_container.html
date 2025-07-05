@@ -1,0 +1,12 @@
+<div id="field-{{ field.name }}-container" class="field-container {{ css_class }}">
+  {{ field.label_tag }} {{ field }}
+  <div class="error-text" id="{{ field.name }}-error">
+    {% for err in errors %}
+    {{ err }}
+    {% if not forloop.last %}<br />
+    {% endif %}
+    {% endfor %}
+  </div>
+  <div class="help-text" id="{{ field.name }}-help">{{ help_text }}</div>
+  <div class="saving-indicator" style="display:none">Saving…</div>
+</div>

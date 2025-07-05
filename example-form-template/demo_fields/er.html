@@ -1,0 +1,20 @@
+{% extends "common/form_wrapper.html" %}
+{% load static %}
+
+{% block title %}Edit Record{% endblock %}
+
+{% block form_fields %}
+  {# Loop only the visible fields; the wrapper already rendered the hidden ones #}
+  {% for field in form.visible_fields %}
+     {% include "common/partials/field_container.html" with field=field css_class="" errors=field.error help_text=field.help_text %}
+  {% endfor %}
+  {{ formset.management_form }}
+
+    <table>
+        {% for form in formset %}
+            <tr>
+                {{ form.as_p }}
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

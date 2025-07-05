@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+  <form
+    id="{{ form_id|default:'autoform' }}"
+    method="{{ method|default:'post' }}"
+    action="{{ action_url }}"
+  >
+    {# 1) CSRF token #}
+    {% csrf_token %}
+
+    {# 2) All hidden inputs (metadata + any other hidden fields) #}
+    {% for hidden in form.hidden_fields %}
+      {{ hidden }}
+    {% endfor %}
+
+    {# 3) Placeholder block for visible fields #}
+    {% block form_fields %}{% endblock %}
+
+    {# 4) Fallback button if JS is off #}
+    <noscript>
+      <button type="submit">Save All</button>
+    </noscript>
+  </form>
+{% endblock %}
