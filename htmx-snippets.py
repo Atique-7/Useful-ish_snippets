@@ -67,13 +67,16 @@ from django.template.loader import render_to_string
 from importlib import import_module
 
 
-def get_model_form(app_label, model_name):
-    Model = apps.get_model(app_label, model_name)
-    class_name = f"{Model.__name__}Form"  # e.g. "DemoRecordForm"
+def lookup_form_class(form_class_path: str):
+    """
+    Given "myapp.forms.MyForm", import and return the class.
+    Falls back to BaseModelForm on any error.
+    """
     try:
-        forms_module = import_module(f"{app_label}.forms")
-        return getattr(forms_module, class_name)
-    except (ImportError, AttributeError):
+        module_path, class_name = form_class_path.rsplit(".", 1)
+        mod = import_module(module_path)
+        return getattr(mod, class_name)
+    except Exception:
         return BaseModelForm
 
 
@@ -90,10 +93,10 @@ def htmx_field_save(request, app_label, model_name, object_id):
     if not field_name:
         return HttpResponse(status=400)
 
-    # 1) Lookup the “base” form class
-    BaseFormClass = get_model_form(app_label, model_name)
+    # 2) AUTO-DISCOVER the right BaseFormClass
+    BaseFormClass = get_custom_modelform(app_label, Model)
 
-    # 2) Build your single-field form subclass
+    # 3) Build your single-field form subclass
     DynamicFormClass = modelform_factory(
         Model,
         form=BaseFormClass,
@@ -114,7 +117,9 @@ def htmx_field_save(request, app_label, model_name, object_id):
         form = DynamicFormClass(instance=obj)
         bound = form[field_name]
         css_class = "valid-value"
+        status_code = 200
     else:
+        status_code = 400
         css_class = "invalid-value"
 
     # 4) Render and return the one field’s container
