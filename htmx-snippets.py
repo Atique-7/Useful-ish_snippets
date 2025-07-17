@@ -2,6 +2,10 @@
 from django import forms
 from django.urls import reverse
 
+import inspect
+from importlib import import_module
+from django.forms import ModelForm
+
 
 class BaseModelForm(forms.ModelForm):
     """
@@ -78,6 +82,26 @@ def lookup_form_class(form_class_path: str):
         return getattr(mod, class_name)
     except Exception:
         return BaseModelForm
+
+
+def get_custom_modelform(app_label: str, model_cls: type) -> type[ModelForm]:
+    """
+    Import `<app_label>.forms`, look for any ModelForm subclass
+    whose Meta.model is exactly model_cls. Return it if found,
+    else fall back to BaseModelForm.
+    """
+    try:
+        forms_mod = import_module(f"{app_label}.forms")
+    except ImportError:
+        return BaseModelForm
+
+    for _, cls in inspect.getmembers(forms_mod, inspect.isclass):
+        if issubclass(cls, ModelForm) and cls is not BaseModelForm:
+            meta = getattr(cls, "Meta", None)
+            if getattr(meta, "model", None) is model_cls:
+                return cls
+
+    return BaseModelForm
 
 
 @require_POST
