@@ -71,19 +71,6 @@ from django.template.loader import render_to_string
 from importlib import import_module
 
 
-def lookup_form_class(form_class_path: str):
-    """
-    Given "myapp.forms.MyForm", import and return the class.
-    Falls back to BaseModelForm on any error.
-    """
-    try:
-        module_path, class_name = form_class_path.rsplit(".", 1)
-        mod = import_module(module_path)
-        return getattr(mod, class_name)
-    except Exception:
-        return BaseModelForm
-
-
 def get_custom_modelform(app_label: str, model_cls: type) -> type[ModelForm]:
     """
     Import `<app_label>.forms`, look for any ModelForm subclass
